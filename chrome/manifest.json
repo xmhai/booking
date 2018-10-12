@@ -1,0 +1,22 @@
+{
+  "name": "ActiveSG Booking",
+  "description": "Grab a court.",
+  "version": "0.1",
+  "manifest_version": 2,
+  "permissions": [
+	"tabs",
+    "https://members.myactivesg.com/",
+	"https://developer.chrome.com/"
+  ],
+  "icons": { "16": "badminton.png",
+           "48": "badminton.png",
+          "128": "badminton.png" },  
+  "content_scripts": [
+  {
+	"run_at": "document_end",
+    "matches": ["https://members.myactivesg.com/facilities/*"],
+	"exclude_matches": ["https://members.myactivesg.com/cart", "https://members.myactivesg.com/auth"],
+    "js": ["jquery.js", "booking.js"]
+  }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "ActiveSG Booking",
+  "description": "Grab a court.",
+  "version": "0.1",
+  "manifest_version": 2,
+  "applications": {
+	  "gecko": {
+		"id": "booking@linhai.com"
+	  }
+  },
+  "permissions": [
+	"tabs",
+    "https://members.myactivesg.com/",
+	"https://developer.chrome.com/"
+  ],
+  "icons": { "16": "badminton.png",
+           "48": "badminton.png",
+          "128": "badminton.png" },  
+  "content_scripts": [
+  {
+    "matches": ["*://members.myactivesg.com/facilities", "*://members.myactivesg.com/facilities/*"],
+    "js": ["jquery.js", "booking.js"]
+  }
+  ]
+}
