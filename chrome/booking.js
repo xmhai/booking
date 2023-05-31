@@ -4,101 +4,156 @@
 // Chrome: Tools -> Extension -> Load unpack extension...
 // ewallet 197211
 
-var daysInadvance = 15; // booking days in advance allowed
+function getCourts(venue) {
+	for (let i = 0; i < venues.length; i++) {
+		if (venues[i].venue===venue) {
+			console.log("*** courts: "+venues[i].courts);
+			return venues[i].courts;
+		}
+	}
+	alert("Error: invalid venue "+venue);
+}
+
+function getTimeSlot(startHour) {
+	return pad(startHour,2)+":00:00;"+pad(startHour+1,2)+":00:00";
+}
+
+function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}
+
+function getBookingDate() {
+	var today = new Date();
+	var bookingDate = new Date();
+	bookingDate.setDate(today.getDate()+15); // 15 days advanced booking
+
+	// format to "Thu, 11 Sep 2014"
+	var m_names = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+	var d_names = new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+	var dateStr = d_names[bookingDate.getDay()] + ", " + bookingDate.getDate() + " " + m_names[bookingDate.getMonth()] + " " + bookingDate.getFullYear();
+	return dateStr;
+}
+
+function sleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+		currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
+}
+
+///////////////////
+// Configuration
+///////////////////
 var triggerHour="07"; // booking window hour (to change when test)
 var activity="18"; // badminton
+var venues = [
+	{"venue":"821", "courts":["02",  "01", "03", "04"],"name":"bendermeer primary school"},
+	{"venue":"830", "courts":["04",  "03", "02", "01"],"name":"north vista secondary school"},
+	{"venue":"308", "courts":["07", "09", "08", "04", "12", "10", "11", "06", "05"],"name":"seng kang sport hall"},
+	{"venue":"301", "courts":["01", "04", "12", "05", "11", "10", "08", "06", "09", "02", "03", "07"],"name":"hougang sport hall"},
+	{"venue":"296", "courts":["16", "15", "14", "13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01"],"name":"clementi sport hall"}
+];
 
 // to change the value of below setting and reload in extension manager to take effect
-var venue="830"; //north vista secondary school
-var c_order = new Array("01", "02", "03", "04");
+var venue="821"; //bendermeer primary school
+var startHour = 15; // 15:00
+var duration = 3;
 
-//var venue="308"; // seng kang sport hall
-//var c_order = new Array("07", "09", "08", "04", "12", "10", "11", "06", "05");
-
-//var venue="301"; // hougang sport hall
-//var c_order = new Array("01", "04", "12", "05", "11", "10", "08", "06", "09", "02", "03", "07");
-
-//var venue="296"; // clementi sport hall
-//var c_order = new Array("16", "15", "14", "13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01");
-
-var timeslot1="17:00:00;18:00:00";
-var timeslot2="18:00:00;19:00:00";
-
+var courts = getCourts(venue);
 var valueSet = false;
-var gotTimeslot1 = false; // booking flag
-var gotTimeslot2 = false; // booking flag
 
 $(document).ready(function() {
-	myTimer();
-});
-
-function myTimer () {
 	// if not login, goto login page
 	if ($('a[href="https://members.myactivesg.com/auth"]')[0]) {
+		console.log("not login, redirect to login");
 		$('a[href="https://members.myactivesg.com/auth"]')[0].click();
 		return;
 	}
 
 	// set court and date
-	if (valueSet==false) {
+	if ($('#activity_filter')[0] && valueSet==false) {
+		console.log("set venue and date");
 		valueSet=true;
 		$("#activity_filter").val(activity);
 		$("#venue_filter").val(venue);
 		$("#date_filter").val(getBookingDate());
+
+		$('#activity_filter_chosen').find('span').text($('#activity_filter option[value='+activity+']').text());
+		$('#venue_filter_chosen').find('span').text($('#venue_filter option[value='+venue+']').text());
 	}
 
-	// add the cart
+	myTimer();
+});
+
+function myTimer () {
+	console.log("*** Timer triggered ***");
+
+	// add to cart
+	console.log("checking add to cart...");
 	if ($("#formFacBooking")[0] && $("input[value='ADD TO CART']")[0]) { // check whether there is an additional item screen
+		console.log("add to cart");
 		$("input[value='ADD TO CART']").trigger('click');
 		return;
 	}
 
 	// book the courts
-	if ($('[name="timeslots[]"]')[0]){ // timeslots returned (div of class subvenre-slot exists)
-		//var booked = book(); // don't specify the order
-		//var booked = bookWithPreference(); // try by order specified
-		var booked = bookList();
-		if (booked) {
-			$("input[value='ADD TO CART']").trigger('click');
-		} else {
-			alert("Oops, all the courts are gone!!!");
+	console.log("checking court availablity...");
+	if ($('.timeslot-container')[0]){ // timeslots returned (div of class timeslot-container exists)
+		if ($('[name="timeslots[]"]')[0]){ // timeslots returned (div of class subvenre-slot exists)
+			console.log("timeslots found");
+			//var booked = book(); // don't specify the order
+			//var booked = bookWithPreference(); // try by order specified
+			console.log("invoke bookList()");
+			var booked = bookList();
+			if (booked) {
+				console.log("add to cart");
+				sleep(500);
+				$("input[value='ADD TO CART']").trigger('click');
+				//setTimeout (myTimer, 500);
+				return;
+			}
+		} else { // no timeslots, in other pages
+			console.log("no timeslots in page");
+			return;
 		}
+
+		console.log("Oops, all the courts are gone!!!");
+		alert("Oops, all the courts are gone!!!");
 		return;
 	}
 	
 	// trigger the search on triggerHour
+	console.log("checking court searching...");
 	if ($("#system-clock")[0]){
 		var clock = $("#system-clock").text();
 		if (clock.substr(0,2)==triggerHour) {
+			console.log("trigger search");
 			// search
 			$("input[value='Search']").trigger('click');
 		} else { // just wait
-			setTimeout (myTimer, 1000);
+			console.log("check after 0.5 second");
+			setTimeout (myTimer, 500);
 		}
 		return;
 	}
 }
 
 function bookList() {
-	var courtList = [
-		"01", "19:00:00;20:00:00",
-		"02", "19:00:00;20:00:00",
-		"01", "20:00:00;21:00:00",
-		"02", "20:00:00;21:00:00",
-		"03", "19:00:00;20:00:00",
-		"04", "19:00:00;20:00:00",
-		"03", "20:00:00;21:00:00",
-		"04", "20:00:00;21:00:00"
-	];
-	var len = courtList.length / 2;
-	
 	var totalBooked = 0;
-	for (i=0; i<len; i++) {
-		var ret = bookCourtByNoAndSlot(courtList[i*2], courtList[i*2+1]);
-		totalBooked = totalBooked + ret;
+	for (i=0; i<duration; i++) {
+		var timeslot = getTimeSlot(startHour+i);
+		for (c=0; c<courts.length; c++) {
+			var ret = bookCourtByNoAndSlot(c, timeslot);
+			if (ret==1) { // got the court, move the next timeslot
+				totalBooked = totalBooked + ret;
+				break;
+			}
+		}
 		if (totalBooked==2) break;
 	}
-
 	return (totalBooked > 0);
 }
 
@@ -122,14 +177,15 @@ function bookCourtByNoAndSlot(courtNo, timeslot) {
 	return result;
 }
 
+/*
 function book() {
 	bookCourt("");
 }
 
 function bookWithPreference() {
-	var c_count = c_order.length;
+	var c_count = courts.length;
 	for (var i = 0; i < c_count; i++) {
-		bookCourt(c_order[i]);
+		bookCourt(courts[i]);
 	}
 	
 	return gotTimeslot1 || gotTimeslot2; // return true if any court if booked
@@ -178,14 +234,9 @@ function bookCourt(courtNo) {
 function reload() {
 	location.reload(true);
 }
+*/
 
-function getBookingDate() {
-	var today = new Date();
-	var bookingDate = new Date();
-	bookingDate.setDate(today.getDate()+daysInadvance);
-	return formatDate(bookingDate);
-}
-
+/*
 function formatDate(d) {
 	// format to "Thu, 11 Sep 2014"
 	var m_names = new Array("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
@@ -193,4 +244,5 @@ function formatDate(d) {
 	var dateStr = d_names[d.getDay()] + ", " + d.getDate() + " " + m_names[d.getMonth()] + " " + d.getFullYear();
 	return dateStr;
 }
+*/
 
