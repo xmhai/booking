@@ -50,7 +50,7 @@ function sleep(milliseconds) {
 var triggerHour="07"; // booking window hour (to change when test)
 var activity="18"; // badminton
 var venues = [
-	{"venue":"821", "courts":["02",  "01", "03", "04"],"name":"bendermeer primary school"},
+	{"venue":"821", "courts":["04",  "03", "02", "01"],"name":"bendermeer primary school"},
 	{"venue":"830", "courts":["04",  "03", "02", "01"],"name":"north vista secondary school"},
 	{"venue":"308", "courts":["07", "09", "08", "04", "12", "10", "11", "06", "05"],"name":"seng kang sport hall"},
 	{"venue":"301", "courts":["01", "04", "12", "05", "11", "10", "08", "06", "09", "02", "03", "07"],"name":"hougang sport hall"},
