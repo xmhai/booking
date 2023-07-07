@@ -146,7 +146,7 @@ function bookList() {
 	for (i=0; i<duration; i++) {
 		var timeslot = getTimeSlot(startHour+i);
 		for (c=0; c<courts.length; c++) {
-			var ret = bookCourtByNoAndSlot(c, timeslot);
+			var ret = bookCourtByNoAndSlot(courts[c], timeslot);
 			if (ret==1) { // got the court, move the next timeslot
 				totalBooked = totalBooked + ret;
 				break;
@@ -158,11 +158,13 @@ function bookList() {
 }
 
 function bookCourtByNoAndSlot(courtNo, timeslot) {
+	console.log("Trying court: " + courtNo + " timeslot:" + timeslot);
 	var result = 0;
 	$('[name="timeslots[]"]').each(function() {
 		var timeslotVal = $( this ).val();
 		if (timeslotVal.indexOf("Court "+courtNo)!=-1 && timeslotVal.indexOf(timeslot)!=-1) {
 			if ($(this).prop('disabled')==false) { // avaiable
+				console.log("Got it!!!");
 				// grab it
 				//set property also work, but safer way is to trigger click event
 				//$(this).prop('checked', true);
