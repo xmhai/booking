@@ -1,0 +1,21 @@
+{
+  "name": "Table Tennis Booking",
+  "description": "Table Tennis Booking",
+  "version": "1.0",
+  "manifest_version": 3,
+  "host_permissions": [
+    "https://members.myactivesg.com/",
+    "https://developer.chrome.com/"
+  ],
+  "icons": { "16": "table-tennis.png",
+           "48": "table-tennis.png",
+          "128": "table-tennis.png" },  
+  "content_scripts": [
+  {
+    "run_at": "document_end",
+    "matches": ["https://members.myactivesg.com/facilities/*"],
+    "exclude_matches": ["https://members.myactivesg.com/cart", "https://members.myactivesg.com/auth"],
+    "js": ["jquery.js", "booking.js"]
+  }
+  ]
+}
